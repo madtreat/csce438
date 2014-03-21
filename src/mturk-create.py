@@ -1,8 +1,18 @@
 import datetime
+from boto.pyami.config import Config, BotoConfigLocations
 import boto.mturk.connection
 import boto.mturk.question as mtq
 import boto.mturk.qualification as mtqu
-mt = boto.mturk.connection.MTurkConnection(aws_access_key_id='xxx', aws_secret_access_key='yyy')
+
+config = Config()
+AWS_ID = config.get('Credentials', 'aws_access_key_id', None)
+SECRET_ID = config.get('Credentials', 'aws_secret_access_key_id', None)
+HOST = 'mechanicalturk.sandbox.amazonaws.com'
+
+mt = boto.mturk.connection.MTurkConnection(
+   aws_access_key_id=AWS_ID, 
+   aws_secret_access_key=SECRET_ID, 
+   host=HOST)
  
 text_en = '''Hello!
 I am test text message to be translated from English to Russian.
@@ -48,7 +58,7 @@ res = mt.create_hit(
    keywords='translate, translation, english, russian',
                      
    # These things affect the total cost:
-   reward=mt.get_price_as_price(0.50),
+   reward=mt.get_price_as_price(0.05),
    max_assignments=2,
                                  
    # These are for scheduling and timing out.
