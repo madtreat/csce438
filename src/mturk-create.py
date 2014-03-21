@@ -1,77 +1,104 @@
-import datetime
+import datetime, sys, sqlite3
 from boto.pyami.config import Config, BotoConfigLocations
-import boto.mturk.connection
-import boto.mturk.question as mtq
-import boto.mturk.qualification as mtqu
+from boto.mturk.connection import MTurkConnection
+from boto.mturk.question import QuestionContent,Question,QuestionForm,Overview,AnswerSpecification,SelectionAnswer,FormattedContent,FreeTextAnswer
+from boto.mturk.qualification import Qualifications,PercentAssignmentsApprovedRequirement
 
+
+# Ensure this script was correctly called
+def print_usage():
+   print("Usage: " + sys.argv[0] + " word iteration")
+
+if len(sys.argv) != 3:
+   print_usage()
+   exit()
+
+
+# Connect to the HIT database
+database = sqlite3.connect('hits.db')
+db       = database.cursor()
+
+# BOTO Configuration
 config = Config()
 AWS_ID = config.get('Credentials', 'aws_access_key_id', None)
 SECRET_ID = config.get('Credentials', 'aws_secret_access_key_id', None)
 HOST = 'mechanicalturk.sandbox.amazonaws.com'
 
-mt = boto.mturk.connection.MTurkConnection(
+mt = MTurkConnection(
    aws_access_key_id=AWS_ID, 
    aws_secret_access_key=SECRET_ID, 
-   host=HOST)
- 
-text_en = '''Hello!
-I am test text message to be translated from English to Russian.
-If you ask me, I was born in a mind of a crazy web developer,
-who tests the MTurk API to start a very promising service later.
-'''
+   host=HOST
+   )
 
-question_id = datetime.datetime.utcnow().strftime("%Y-%m-%d-%H-%M-%S")
-print('id=%s' % question_id)
+# HIT Configuration - global title, description, keywords, qualifications
+TITLE    = 'Provide Related Terms'
+DESC     = 'Given a word or phrase, provide another (different) word that relates to the given one.'
+KEYWORDS = 'opinions, relations, idea, brainstorm, crowdstorm'
+QUAL     = Qualifications()
+QUAL     = QUAL.add(PercentAssignmentsApprovedRequirement('GreaterThanOrEqualTo', 75))
+REWARD   = 0.05
+MAX_ASSN = 1# 10? 20?
 
-content1 = mtq.QuestionContent()
-content1.append_field('Title', 'Translate a text between the markers below from English to Russian.')
-content1.append_field('Title', 'Human translation only! Machine tranlations will be rejected.')
-content1.append_field('Text', '================= FROM HERE =================')
-content1.append_field('Text', text_en)
-content1.append_field('Text', '================= TILL HERE =================')
-   
-content2 = mtq.QuestionContent()
-content2.append_field('Title', 'Any notes? Advices? Emotions? (Optional)')
-   
-question1 = mtq.Question(
-   question_id,
-   content = content1,
-   answer_spec = mtq.AnswerSpecification(mtq.FreeTextAnswer()),
+# The given phrase to be brainstormed - read from the first argument
+PHRASE   = sys.argv[1]
+ITERATION= sys.argv[2]
+
+
+# HIT Overview
+overview = Overview()
+overview.append_field('Title', 'Tell us things or phrases that relate to a given phrase or picture')
+#overview.append(FormattedContent('<a target="_blank"'
+#                                 ' href="http://www.toforge.com">'
+#                                 ' Mauro Rocco Personal Forge</a>'))
+
+
+# Build Question(s)
+qc = QuestionContent()
+qc.append_field('Title', 'Enter a word or phrase that relates to:')
+qc.append_field('Text',  PHRASE)
+
+answer = FreeTextAnswer()
+
+question = Question(
+   identifier='comments',
+   content=qc,
+   answer_spec=AnswerSpecification(answer),
    is_required = True,
    )
-question2 = mtq.Question(
-   question_id+'-b',
-   content = content2,
-   answer_spec = mtq.AnswerSpecification(mtq.FreeTextAnswer()),
-   is_required = False,
-   )
-   
-qualifications = mtqu.Qualifications()
-qualifications.add(mtqu.PercentAssignmentsApprovedRequirement('GreaterThanOrEqualTo', 75))
-      
+
+
+# Build Question Form
+qform = QuestionForm()
+qform.append(overview)
+qform.append(question)
+
+
+# Create the HIT
 res = mt.create_hit(
-   questions=[question1, question2],
-   qualifications=qualifications,
+   questions      = [question],#, question2],
+   qualifications = QUAL,
             
-   title = 'Translate 3 lines from English to Russian (human translation needed).',
-   description = 'Translate 3 lines of English to Russian. No machine translations will be accepted. Only human translation.',
-   keywords='translate, translation, english, russian',
+   title          = TITLE,
+   description    = DESC,
+   keywords       = KEYWORDS,
                      
    # These things affect the total cost:
-   reward=mt.get_price_as_price(0.05),
-   max_assignments=2,
+   reward         = mt.get_price_as_price(REWARD),
+   max_assignments= MAX_ASSN,
                                  
    # These are for scheduling and timing out.
-   approval_delay=datetime.timedelta(seconds=24*60*60),# auto-approve timeout
-   duration=datetime.timedelta(seconds=15*60),# how fast the task is abandoned if not finished
+   # auto-approve timeout
+   approval_delay = datetime.timedelta(seconds=60),#4*60*60),
+   # how fast the task is abandoned if not finished
+   duration       = datetime.timedelta(seconds=15*60),
    )
       
 hit = res[0]
 hit_id = hit.HITId
-print('hit id = %s' % hit_id)
-filename = 'hit-%s.txt' % question_id
-file(filename, 'wt').write(hit_id)
-print('saved to %s' % filename)
+status = 'iteration {}: hit spawned with id = {}'.format(ITERATION, hit_id)
+print(status)
 
-
+db.execute('''CREATE TABLE IF NOT EXISTS hits (id, iter)''')
+db_entry = "INSERT INTO hits VALUES (\'" + hit_id + "\',\'" + ITERATION + "\')"
+db.execute(db_entry)
 
