@@ -14,9 +14,15 @@ if len(sys.argv) != 3:
    exit()
 
 
+# The given phrase to be brainstormed - read from the first argument
+PHRASE   = sys.argv[1]
+ITERATION= sys.argv[2]
+
+
 # Connect to the HIT database
-database = sqlite3.connect('hits.db')
+database = sqlite3.connect('results.db')
 db       = database.cursor()
+db.execute('''CREATE TABLE IF NOT EXISTS hits (hit_id, iter, num_complete)''')
 
 # BOTO Configuration
 config = Config()
@@ -37,11 +43,7 @@ KEYWORDS = 'opinions, relations, idea, brainstorm, crowdstorm'
 QUAL     = Qualifications()
 QUAL     = QUAL.add(PercentAssignmentsApprovedRequirement('GreaterThanOrEqualTo', 75))
 REWARD   = 0.05
-MAX_ASSN = 1# 10? 20?
-
-# The given phrase to be brainstormed - read from the first argument
-PHRASE   = sys.argv[1]
-ITERATION= sys.argv[2]
+MAX_ASSN = 5#20
 
 
 # HIT Overview
@@ -98,7 +100,11 @@ hit_id = hit.HITId
 status = 'iteration {}: hit spawned with id = {}'.format(ITERATION, hit_id)
 print(status)
 
-db.execute('''CREATE TABLE IF NOT EXISTS hits (id, iter)''')
-db_entry = "INSERT INTO hits VALUES (\'" + hit_id + "\',\'" + ITERATION + "\')"
+# Insert this hit's info into the database
+db_entry = "INSERT INTO hits VALUES (\'" + hit_id + "\',\'" + ITERATION + "\',0)"
 db.execute(db_entry)
+
+# Save changes
+database.commit()
+database.close()
 
