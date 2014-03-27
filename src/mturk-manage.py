@@ -17,8 +17,8 @@
 #
 #
 # The Crowdstorming SQLite Database schema used is:
-#     Tables   |  Values
-#    ----------+-------------------------------------------------------------
+#     Tables   |  Columns
+#    ----------+--------------------------------------------------------------------
 #     jobs     |  Job_ID, Seed_Phrase, Created (Date)
 #     hits     |  Job_ID, Hit_ID,      Parent_Hit_ID, Iter,    Num_Complete, Phrase
 #     results  |  Job_ID, Hit_ID,      Task_ID,       Response
