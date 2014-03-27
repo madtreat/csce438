@@ -1,8 +1,17 @@
-#install numpy, matplotlib from sourceforge installers
-#install networkx from pip
-#install python-dateutil from pip
-#install Graphviz from site
-#pip uninstall pyparsing
+# The purpose of this script is to display the results contained
+# in the Crowdstorming SQLite Database in a clean, graphical manner.
+#
+# Created by Madison Treat, Kodi Tapie and Blake Robertson
+#
+#
+# REQUIREMENTS TO DISPLAY:
+#
+# install numpy, matplotlib from sourceforge installers
+# install networkx from pip
+# install python-dateutil from pip
+# install Graphviz from site
+#
+# pip uninstall pyparsing
 # pip install -Iv https://pypi.python.org/packages/source/p/pyparsing/pyparsing-1.5.7.tar.gz#md5=9be0fcdcc595199c646ab317c1d9a709
 # pip install pydot
 # add C:\Program Files (x86)\Graphviz2.36\bin to path

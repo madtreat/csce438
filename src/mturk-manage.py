@@ -1,6 +1,20 @@
-# TODO: wipe/clear the table before running this manager each time
-# OR:   make a different db file for each particular instance/idea web generated
-# TODO: make the SQLite calls secure versions, not just string concatenations
+# This file is the main script for our "Crowd-Storming" Application
+#
+# Created by Madison Treat, Kodi Tapie and Blake Robertson
+#
+#
+# The idea is that this script will be used to manage the lifecycle
+# of a job.  In particular, the different functions that will be 
+# performed by this script (using the other scripts) are:
+#  - begin a job
+#        where a job is defined as the particular seed phrase which 
+#        will be used to generate an idea web
+#  - retrieve and aggregate all results
+#  - display results if all HITs and MTurk Tasks are complete
+#
+# The other scripts should not be called directly except for 
+# developmental purposes, as they are all managed by THIS script.
+#
 
 import datetime, sys, sqlite3, time
 from subprocess import call

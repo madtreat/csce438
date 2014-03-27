@@ -1,3 +1,13 @@
+# This script handles creating a single HIT for a particular job
+# for MTurk workers to perform.
+#
+# Created by Madison Treat, Kodi Tapie and Blake Robertson
+#
+#
+# DO NOT call this script except for developmental purposes.
+# It should ONLY be called from mturk-manage.py
+#
+
 import datetime, sys, sqlite3
 from boto.pyami.config import Config, BotoConfigLocations
 from boto.mturk.connection import MTurkConnection
@@ -53,9 +63,6 @@ MAX_ASSN = 5#20
 # HIT Overview
 overview = Overview()
 overview.append_field('Title', 'Tell us things or phrases that relate to a given phrase or picture')
-#overview.append(FormattedContent('<a target="_blank"'
-#                                 ' href="http://www.toforge.com">'
-#                                 ' Mauro Rocco Personal Forge</a>'))
 
 
 # Build Question(s)
@@ -106,7 +113,7 @@ print(status)
 
 # Insert this HIT's info into the database
 hitsTable = "INSERT INTO hits VALUES (?, ?, ?, ?, 0, ?)"
-#TODO: FIXME: figure out parent ID
+#TODO: FIXME: figure out parent_id
 parent_id = ""
 db.execute(hitsTable, (Job_ID, hit_id, parent_id, ITERATION, PHRASE))
 

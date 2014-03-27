@@ -1,3 +1,13 @@
+# This script handles retrieving completed MTurk HITs/Tasks
+# and adding them to the Crowdstorming SQLite Database
+#
+# Created by Madison Treat, Kodi Tapie and Blake Robertson
+#
+#
+# DO NOT call this script except for developmental purposes.
+# It should ONLY be called from mturk-manage.py
+#
+
 import datetime, sys, sqlite3
 from boto.pyami.config import Config, BotoConfigLocations
 from boto.mturk.connection import MTurkConnection
@@ -38,14 +48,22 @@ db.execute(jobHits, [JOB_ID])
 
 hit_ids = db.fetchall()
 print("Fetching results for Job ID " + JOB_ID)
-print("HIT IDs:")
-print(hit_ids)
-print("\n")
+#print("HIT IDs:")
+#print(hit_ids)
+print("")
 
 for hit in hit_ids:
    hit_id = hit[0]
-   print("HIT: " + hit_id)
    tasks = mt.get_assignments(hit_id)
+
+   print ("-----------------------------------------------------------")
+   print ("HIT: " + hit_id)
+   print ("   Num_Complete: " + str(len(tasks)))
+
+   # Update the "hits" table with the number of completed tasks for this HIT
+   hitsUpdate =   "UPDATE hits SET Num_Complete=? WHERE Hit_ID=?"
+   db.execute(hitsUpdate, [len(tasks), hit_id])
+   #print("   Total number of rows changed: " + str(database.total_changes))
 
    for task in tasks:
       task_id = task.AssignmentId
@@ -59,7 +77,8 @@ for hit in hit_ids:
 
             #print (db_entry)
             db.execute(db_entry, (JOB_ID, hit_id, task_id, response))
-   print ("-------------")
+
+   database.commit()
 
 # Save changes
 database.commit()
