@@ -55,10 +55,11 @@ seedID = db.lastrowid
 
 # Create table of results for this particular inquiry phrase
 seedResults = "CREATE TABLE IF NOT EXISTS results ("\
-   "Job_ID   INTEGER PRIMARY KEY,"\
+   "Job_ID   INTEGER NOT NULL,"\
    "Hit_ID   TEXT NOT NULL, "\
    "Task_ID  TEXT NOT NULL, "\
-   "Response TEXT"\
+   "Response TEXT, "\
+   "PRIMARY KEY(Job_ID, Task_ID)"\
    ")"
 db.execute(seedResults)#, [seedID])
 
