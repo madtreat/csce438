@@ -7,22 +7,26 @@ from boto.mturk.qualification import Qualifications,PercentAssignmentsApprovedRe
 
 # Ensure this script was correctly called
 def print_usage():
-   print("Usage: " + sys.argv[0] + " word iteration")
+   print("Usage: " + sys.argv[0] + " phrase Job_ID iter")
+   print("\nWhere:")
+   print("   phrase  = the phrase turkers will see for this HIT")
+   print("   Job_ID     = the Seed Phrase ID")
+   print("   iter    = the iteration/level for this particular HIT")
 
-if len(sys.argv) != 3:
+if len(sys.argv) != 4:
    print_usage()
    exit()
 
 
 # The given phrase to be brainstormed - read from the first argument
 PHRASE   = sys.argv[1]
-ITERATION= sys.argv[2]
+Job_ID      = sys.argv[2]
+ITERATION= sys.argv[3]
 
 
 # Connect to the HIT database
-database = sqlite3.connect('results.db')
+database = sqlite3.connect('crowdstorming.db')
 db       = database.cursor()
-db.execute('''CREATE TABLE IF NOT EXISTS hits (hit_id, iter, num_complete)''')
 
 # BOTO Configuration
 config = Config()
@@ -100,9 +104,18 @@ hit_id = hit.HITId
 status = 'iteration {}: hit spawned with id = {}'.format(ITERATION, hit_id)
 print(status)
 
-# Insert this hit's info into the database
-db_entry = "INSERT INTO hits VALUES (\'" + hit_id + "\',\'" + ITERATION + "\',0)"
-db.execute(db_entry)
+# Insert this HIT's info into the database
+hitsTable = "INSERT INTO hits VALUES ("\
+   "\'?\', "\  # Job_ID
+   "\'?\', "\  # Hit_ID
+   "\'?\', "\  # Parent_Hit_ID
+   "\'?\', "\  # Iter
+   "0, "\      # Num_Complete
+   "\'?\'"\    # phrase
+   ")"
+#TODO: FIXME: figure out parent ID
+parent_id = ""
+db.execute(hitsTable, (Job_ID, hit_id, parent_id, ITERATION, PHRASE))
 
 # Save changes
 database.commit()

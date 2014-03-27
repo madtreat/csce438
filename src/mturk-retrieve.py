@@ -4,7 +4,7 @@ from boto.mturk.connection import MTurkConnection
 
 # Ensure this script was correctly called
 def print_usage():
-   print("Usage: " + sys.argv[0] + " hit_id")
+   print("Usage: " + sys.argv[0] + " job_id")
 
 if len(sys.argv) != 2:
    print_usage()
@@ -12,16 +12,12 @@ if len(sys.argv) != 2:
 
 
 # Process command line args
-HIT_ID   = sys.argv[1]
+JOB_ID   = sys.argv[1]
 
 
 # Connect to the sqlite results database
-database = sqlite3.connect('results.db')
+database = sqlite3.connect('crowdstorming.db')
 db       = database.cursor()
-
-db_entry = "CREATE TABLE IF NOT EXISTS \'" + HIT_ID + "\' (task_id, phrase)"
-db.execute(db_entry)
-
 
 # BOTO Configuration
 config = Config()
@@ -37,7 +33,7 @@ mt = MTurkConnection(
 
 
 # Retrieve results from MTurk
-tasks = mt.get_assignments(HIT_ID)
+tasks = mt.get_assignments(JOB_ID)
 
 print(tasks)
 for task in tasks:
@@ -45,12 +41,17 @@ for task in tasks:
    print ("Task ID = " + task_id)
    print ("Task Worker ID = " + task.WorkerId)
    for question_form_answer in task.answers[0]:
-      for phrase in question_form_answer.fields:
-         print ("Phrase = " + phrase)
+      for response in question_form_answer.fields:
+         print ("Phrase = " + response)
          # Add the results into the database
-         db_entry = "INSERT OR REPLACE INTO \'" + HIT_ID + "\' VALUES (\'" + task_id + "\',\'" + phrase + "\')"
+         db_entry = "INSERT OR REPLACE INTO \'?\' VALUES ("\
+            "\'?\', "\  # HIT_ID
+            "\'?\', "\  # Task_ID
+            "\'?\'"\    # response
+            ")"
+
          #print (db_entry)
-         db.execute(db_entry)
+         db.execute(db_entry, (JOB_ID, hit_id, task_id, response))
       print ("-------------")
 
 # Save changes
