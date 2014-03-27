@@ -105,14 +105,7 @@ status = 'iteration {}: hit spawned with id = {}'.format(ITERATION, hit_id)
 print(status)
 
 # Insert this HIT's info into the database
-hitsTable = "INSERT INTO hits VALUES ("\
-   "\'?\', "\  # Job_ID
-   "\'?\', "\  # Hit_ID
-   "\'?\', "\  # Parent_Hit_ID
-   "\'?\', "\  # Iter
-   "0, "\      # Num_Complete
-   "\'?\'"\    # phrase
-   ")"
+hitsTable = "INSERT INTO hits VALUES (?, ?, ?, ?, 0, ?)"
 #TODO: FIXME: figure out parent ID
 parent_id = ""
 db.execute(hitsTable, (Job_ID, hit_id, parent_id, ITERATION, PHRASE))

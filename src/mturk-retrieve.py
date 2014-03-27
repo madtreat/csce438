@@ -33,26 +33,27 @@ mt = MTurkConnection(
 
 
 # Retrieve results from MTurk
-tasks = mt.get_assignments(JOB_ID)
+jobHits = "SELECT (Hit_ID) FROM hits WHERE Job_ID = ?"
+hit_ids = db.execute(jobHits, [JOB_ID])
+print(hit_ids)
 
-print(tasks)
-for task in tasks:
-   task_id = task.AssignmentId
-   print ("Task ID = " + task_id)
-   print ("Task Worker ID = " + task.WorkerId)
-   for question_form_answer in task.answers[0]:
-      for response in question_form_answer.fields:
-         print ("Phrase = " + response)
-         # Add the results into the database
-         db_entry = "INSERT OR REPLACE INTO \'?\' VALUES ("\
-            "\'?\', "\  # HIT_ID
-            "\'?\', "\  # Task_ID
-            "\'?\'"\    # response
-            ")"
+for hit_id in hit_ids:
+   tasks = mt.get_assignments(hit_id)
 
-         #print (db_entry)
-         db.execute(db_entry, (JOB_ID, hit_id, task_id, response))
-      print ("-------------")
+   print(tasks)
+   for task in tasks:
+      task_id = task.AssignmentId
+      print ("Task ID = " + task_id)
+      print ("Task Worker ID = " + task.WorkerId)
+      for question_form_answer in task.answers[0]:
+         for response in question_form_answer.fields:
+            print ("Phrase = " + response)
+            # Add the results into the database
+            db_entry = "INSERT OR REPLACE INTO results VALUES (?, ?, ?, ?)"
+
+            #print (db_entry)
+            db.execute(db_entry, (JOB_ID, hit_id, task_id, response))
+         print ("-------------")
 
 # Save changes
 database.commit()

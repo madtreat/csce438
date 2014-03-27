@@ -24,15 +24,16 @@ SEED = sys.argv[1]
 database = sqlite3.connect('crowdstorming.db')
 db       = database.cursor()
 
-# Ensure "phrases" table exists
+# Ensure "jobs" table exists
 seedTable = "CREATE TABLE IF NOT EXISTS jobs ("\
-   "Job_ID INTEGER PRIMARY KEY NOT NULL AUTOINCREMENT, "\
+   "Job_ID INTEGER PRIMARY KEY AUTOINCREMENT, "\
    "Seed_Phrase TEXT NOT NULL, "\
    "Created DATE DEFAULT CURRENT_DATE"\
    ")"
+db.execute(seedTable)
 
 # Ensure "hits" table exists
-hitsTable = "CREATE TABLE IF NOT EXISTS hits "\
+hitsTable = "CREATE TABLE IF NOT EXISTS hits ("\
    "Job_ID INTEGER NOT NULL, "\
    "Hit_ID TEXT NOT NULL, "\
    "Parent_Hit_ID TEXT, "\
@@ -44,29 +45,29 @@ hitsTable = "CREATE TABLE IF NOT EXISTS hits "\
 db.execute(hitsTable)
 
 
-# Add this phrase into the "phrases" table in the database
-db.execute(phraseCmd)
-
-seedRow = "INSERT INTO phrases(Seed_Phrase) VALUES \'?\'"
-db.execute(dummyCmd, (SEED))
+# Add this phrase into the "jobs" table in the database
+seedRow = 'INSERT INTO jobs(Seed_Phrase) VALUES (?)'
+#seedArg = ','.join('?')
+db.execute(seedRow, [SEED])
 
 # Get the next (unique) Phrase ID
-seedID = cursor.lastrowid
+seedID = db.lastrowid
 
 # Create table of results for this particular inquiry phrase
-seedResults = "CREATE TABLE IF NOT EXISTS \'?\' VALUES ("\
-   "Hit_ID   TEXT PRIMARY KEY, "\
+seedResults = "CREATE TABLE IF NOT EXISTS results ("\
+   "Job_ID   INTEGER PRIMARY KEY,"\
+   "Hit_ID   TEXT NOT NULL, "\
    "Task_ID  TEXT NOT NULL, "\
    "Response TEXT"\
    ")"
-db.execute(seedResults, (seedID))
+db.execute(seedResults)#, [seedID])
 
 # Save changes
 database.commit()
 
 
 # Spawn Initial HIT
-call (["python", "mturk-create.py", SEED, seedID, "0"])
+call (["python", "mturk-create.py", SEED, str(seedID), "0"])
 
 # Retrieve Results
 #cmd = "SELECT * FROM hits;"
