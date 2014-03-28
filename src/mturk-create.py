@@ -17,13 +17,14 @@ from boto.mturk.qualification import Qualifications,PercentAssignmentsApprovedRe
 
 # Ensure this script was correctly called
 def print_usage():
-   print("Usage: " + sys.argv[0] + " phrase Job_ID iter")
+   print("Usage: " + sys.argv[0] + " phrase Job_ID iter parent_HIT_ID")
    print("\nWhere:")
    print("   phrase  = the phrase turkers will see for this HIT")
    print("   Job_ID     = the Seed Phrase ID")
    print("   iter    = the iteration/level for this particular HIT")
+   print("   parent_HIT_ID    = the parent HIT of the new HIT to be created")
 
-if len(sys.argv) != 4:
+if len(sys.argv) != 5:
    print_usage()
    exit()
 
@@ -32,6 +33,7 @@ if len(sys.argv) != 4:
 PHRASE   = sys.argv[1]
 Job_ID      = sys.argv[2]
 ITERATION= sys.argv[3]
+PARENT_HIT_ID = sys.argv[4]
 
 
 # Connect to the HIT database
@@ -57,7 +59,7 @@ KEYWORDS = 'opinions, relations, idea, brainstorm, crowdstorm'
 QUAL     = Qualifications()
 QUAL     = QUAL.add(PercentAssignmentsApprovedRequirement('GreaterThanOrEqualTo', 75))
 REWARD   = 0.05
-MAX_ASSN = 5#20
+MAX_ASSN = 1#20
 
 
 # HIT Overview
@@ -112,10 +114,8 @@ status = 'iteration {}: hit spawned with id = {}'.format(ITERATION, hit_id)
 print(status)
 
 # Insert this HIT's info into the database
-hitsTable = "INSERT INTO hits VALUES (?, ?, ?, ?, 0, ?)"
-#TODO: FIXME: figure out parent_id
-parent_id = ""
-db.execute(hitsTable, (Job_ID, hit_id, parent_id, ITERATION, PHRASE))
+hitsTable = "INSERT INTO hits VALUES (?, ?, ?, ?, 0, ?, 0)"
+db.execute(hitsTable, (Job_ID, hit_id, PARENT_HIT_ID, ITERATION, PHRASE))
 
 # Save changes
 database.commit()

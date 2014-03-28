@@ -6,9 +6,6 @@
 # The idea is that this script will be used to manage the lifecycle
 # of a job.  In particular, the different functions that will be 
 # performed by this script (using the other scripts) are:
-#  - begin a job
-#        where a job is defined as the particular seed phrase which 
-#        will be used to generate an idea web
 #  - retrieve and aggregate all results
 #  - display results if all HITs and MTurk Tasks are complete
 #
@@ -20,7 +17,7 @@
 #     Tables   |  Columns
 #    ----------+--------------------------------------------------------------------
 #     jobs     |  Job_ID, Seed_Phrase, Created (Date)
-#     hits     |  Job_ID, Hit_ID,      Parent_Hit_ID, Iter,    Num_Complete, Phrase
+#     hits     |  Job_ID, Hit_ID,      Parent_Hit_ID, Iter,    Num_Complete, Phrase, Has_Childern
 #     results  |  Job_ID, Hit_ID,      Task_ID,       Response
 #
 
@@ -31,7 +28,7 @@ from boto.mturk.connection import MTurkConnection
 
 # Ensure this script was correctly called
 def print_usage():
-   print("Usage: " + sys.argv[0] + " seed_phrase")
+   print("Usage: " + sys.argv[0] + " job_id")
 
 if len(sys.argv) != 2:
    print_usage()
@@ -39,58 +36,48 @@ if len(sys.argv) != 2:
 
 
 # Process command line args
-SEED = sys.argv[1]
+JOB_ID = sys.argv[1]
 
+# fetch results from amazon
+call (["python", "mturk-retrieve.py", JOB_ID])
 
 # Connect to the sqlite results database
 database = sqlite3.connect('crowdstorming.db')
 db       = database.cursor()
 
-# Ensure "jobs" table exists
-seedTable = "CREATE TABLE IF NOT EXISTS jobs ("\
-   "Job_ID INTEGER PRIMARY KEY AUTOINCREMENT, "\
-   "Seed_Phrase TEXT NOT NULL, "\
-   "Created DATE DEFAULT CURRENT_DATE"\
-   ")"
-db.execute(seedTable)
+# Get all hits with given job id
+db.execute("select * from hits where Job_ID = ?", [JOB_ID])
+allHits = db.fetchall()
 
-# Ensure "hits" table exists
-hitsTable = "CREATE TABLE IF NOT EXISTS hits ("\
-   "Job_ID INTEGER NOT NULL, "\
-   "Hit_ID TEXT NOT NULL, "\
-   "Parent_Hit_ID TEXT, "\
-   "Iter INTEGER NOT NULL, "\
-   "Num_Complete INTEGER DEFAULT 0, "\
-   "Phrase TEXT NOT NULL, "\
-   "PRIMARY KEY(Job_ID, Hit_ID)"\
-   ")"
-db.execute(hitsTable)
+# see if there are hits that are completed but have no childern
+newlyCompletedHits = []
+for hit in allHits:
+    hitID = str(hit[1]);
+    currIter = hit[3]
+    numCompleted = hit[4]
+    hasChildern = hit[6]
+    print hitID + " " + str(currIter) + " " + str(numCompleted) + " " + str(hasChildern)
+    if (currIter < 4 and numCompleted == 1 and hasChildern == 0):
+        newlyCompletedHits.append((hitID, currIter))
 
-
-# Add this phrase into the "jobs" table in the database
-seedRow = 'INSERT INTO jobs(Seed_Phrase) VALUES (?)'
-#seedArg = ','.join('?')
-db.execute(seedRow, [SEED])
-
-# Get the next (unique) Phrase ID
-seedID = db.lastrowid
-
-# Create table of results for this particular inquiry phrase
-seedResults = "CREATE TABLE IF NOT EXISTS results ("\
-   "Job_ID   INTEGER NOT NULL,"\
-   "Hit_ID   TEXT NOT NULL, "\
-   "Task_ID  TEXT NOT NULL, "\
-   "Response TEXT, "\
-   "PRIMARY KEY(Job_ID, Task_ID)"\
-   ")"
-db.execute(seedResults)#, [seedID])
+# Get Results from newly completed HIT and create new HITs from them
+print newlyCompletedHits
+for hitID, currIter in newlyCompletedHits:
+    db.execute("select Response from results where Hit_ID = ?", [hitID])
+    newPhrases = db.fetchall()
+    newIter = currIter+1
+    for phrase in newPhrases:
+        call (["python", "mturk-create.py", str(phrase[0]), str(JOB_ID), str(newIter), str(hitID)])
+    
+    # update Has_Childern field
+    hitsUpdate =   "UPDATE hits SET Has_Childern=1 WHERE Hit_ID=?"
+    db.execute(hitsUpdate, [hitID])
 
 # Save changes
 database.commit()
 
-
-# Spawn Initial HIT
-call (["python", "mturk-create.py", SEED, str(seedID), "0"])
+# draw graph
+call (["python", "mturk-draw.py", JOB_ID])
 
 # Retrieve Results
 #cmd = "SELECT * FROM hits;"

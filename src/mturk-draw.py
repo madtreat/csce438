@@ -67,16 +67,19 @@ hits_set = {}
 for rows in hits_response:
     hits_set[str(rows[1])] = (rows[5], rows[3])
 
-iter_sorted_list = [[]]
+iter_sorted_list = []
+for i in range(0,max_iter+1):
+    iter_sorted_list.append([])
+
 for row in hits_response:
     iter_sorted_list[int(row[3])].append(row)
-    
-print iter_sorted_list
 
+initial_node = str(iter_sorted_list[0][0][5])
+G.add_node(initial_node)
 for i in range(1,max_iter+1):
     for node in iter_sorted_list[i]:
         parent_id = node[2]
-        G.add_edge(str(hits_set[str(parent_id)]), str(hits_set[str(row[1])]))
+        G.add_edge(str(hits_set[str(parent_id)][0]), str(hits_set[str(node[1])][0]))
 
 '''
 for i in range(0,max_iter+1):
@@ -84,7 +87,6 @@ for i in range(0,max_iter+1):
         if (int(row[3]) == i):
             parent_id = row[2]
             G.add_edge(hits_set[str(parent_id)],hits_set[str(row[1])])
-'''
     
 db.execute('select * from results where Job_ID = ?', [JOB_ID])
 results_response = db.fetchall()
@@ -93,7 +95,8 @@ for row in results_response:
 
 for i in range(0, len(results_response)):
     G.add_edge(hits_set[str(results_response[i][1])][0], str(results_response[i][3]))
-
+'''
+    
 graph_pos = nx.pydot_layout(G)
 
 graph_layout='shell'
