@@ -59,7 +59,7 @@ KEYWORDS = 'opinions, relations, idea, brainstorm, crowdstorm'
 QUAL     = Qualifications()
 QUAL     = QUAL.add(PercentAssignmentsApprovedRequirement('GreaterThanOrEqualTo', 75))
 REWARD   = 0.05
-MAX_ASSN = 1#20
+MAX_ASSN = 3#20
 
 
 # HIT Overview

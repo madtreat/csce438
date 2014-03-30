@@ -57,7 +57,7 @@ for hit in allHits:
     numCompleted = hit[4]
     hasChildern = hit[6]
     print hitID + " " + str(currIter) + " " + str(numCompleted) + " " + str(hasChildern)
-    if (currIter < 4 and numCompleted == 1 and hasChildern == 0):
+    if (currIter < 4 and numCompleted == 3 and hasChildern == 0):
         newlyCompletedHits.append((hitID, currIter))
 
 # Get Results from newly completed HIT and create new HITs from them
