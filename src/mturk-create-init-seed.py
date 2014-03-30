@@ -68,7 +68,7 @@ db.execute(seedRow, [SEED])
 # Get the next (unique) Phrase ID
 seedID = db.lastrowid
 
-# Create table of results for this particular inquiry phrase
+# Create table of results
 seedResults = "CREATE TABLE IF NOT EXISTS results ("\
    "Job_ID   INTEGER NOT NULL,"\
    "Hit_ID   TEXT NOT NULL, "\
@@ -76,7 +76,15 @@ seedResults = "CREATE TABLE IF NOT EXISTS results ("\
    "Response TEXT, "\
    "PRIMARY KEY(Job_ID, Task_ID)"\
    ")"
-db.execute(seedResults)#, [seedID])
+db.execute(seedResults)
+
+
+# Create table of unique phrases per job
+unique = "CREATE TABLE unique_phrases ("\
+   "Job_ID  INTEGER NOT NULL,"\
+   "Phrase  TEXT NOT NULL"\
+   ")"
+db.execute(unique)
 
 # Save changes
 database.commit()

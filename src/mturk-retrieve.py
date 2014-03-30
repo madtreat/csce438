@@ -73,10 +73,12 @@ for hit in hit_ids:
          for response in question_form_answer.fields:
             print ("      Phrase    = " + response)
             # Add the results into the database
-            db_entry = "INSERT OR REPLACE INTO results VALUES (?, ?, ?, ?)"
-
+            resultsTable = "INSERT OR REPLACE INTO results VALUES (?, ?, ?, ?)"
             #print (db_entry)
-            db.execute(db_entry, (JOB_ID, hit_id, task_id, response))
+            db.execute(resultsTable, (JOB_ID, hit_id, task_id, str(response).lower()))
+
+            uniqueTable = "INSERT OR REPLACE INTO unique_phrases VALUES(?, ?)"
+            db.execute(uniqueTable, (JOB_ID, str(response).lower()))
 
    database.commit()
 
