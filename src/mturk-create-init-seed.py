@@ -8,13 +8,6 @@
 # and send off the initial HIT and the user will be given their Job ID.
 # The user can then call mturk-manage.py with their Job_ID
 #
-# The Crowdstorming SQLite Database schema used is:
-#     Tables   |  Columns
-#    ----------+--------------------------------------------------------------------
-#     jobs     |  Job_ID, Seed_Phrase, Created (Date)
-#     hits     |  Job_ID, Hit_ID,      Parent_Hit_ID, Iter,    Num_Complete, Phrase, Has_Children
-#     results  |  Job_ID, Hit_ID,      Task_ID,       Response
-#
 
 import datetime, sys, sqlite3, time
 from subprocess import call
