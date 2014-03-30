@@ -16,16 +16,17 @@ from boto.mturk.connection import MTurkConnection
 
 # Ensure this script was correctly called
 def print_usage():
-   print("Usage: " + sys.argv[0] + " seed_phrase")
+   print("Usage: " + sys.argv[0] + " num_iterations num_branches seed_phrase")
 
-if len(sys.argv) != 2:
+if len(sys.argv) < 4:
    print_usage()
    exit()
 
 
 # Process command line args
-SEED = sys.argv[1]
-
+NUM_ITER = sys.argv[1]
+NUM_BRANCHES = sys.argv[2]
+SEED = sys.argv[3]
 
 # Connect to the sqlite results database
 database = sqlite3.connect('crowdstorming.db')
@@ -35,6 +36,8 @@ db       = database.cursor()
 seedTable = "CREATE TABLE IF NOT EXISTS jobs ("\
    "Job_ID INTEGER PRIMARY KEY AUTOINCREMENT, "\
    "Seed_Phrase TEXT NOT NULL, "\
+   "Num_Iter INTEGER NOT NULL, "\
+   "Num_Branches INTEGER NOT NULL, "\
    "Created DATE DEFAULT CURRENT_DATE"\
    ")"
 db.execute(seedTable)
@@ -54,9 +57,9 @@ db.execute(hitsTable)
 
 
 # Add this phrase into the "jobs" table in the database
-seedRow = 'INSERT INTO jobs(Seed_Phrase) VALUES (?)'
+seedRow = 'INSERT INTO jobs(Seed_Phrase, Num_Iter, Num_Branches) VALUES (?, ?, ?)'
 #seedArg = ','.join('?')
-db.execute(seedRow, [SEED])
+db.execute(seedRow, [SEED, NUM_ITER, NUM_BRANCHES])
 
 # Get the next (unique) Phrase ID
 seedID = db.lastrowid
@@ -77,6 +80,7 @@ unique = "CREATE TABLE IF NOT EXISTS unique_phrases ("\
    "Job_ID  INTEGER NOT NULL,"\
    "Phrase  TEXT NOT NULL"\
    ")"
+
 db.execute(unique)
 
 # Save changes
@@ -84,7 +88,7 @@ database.commit()
 
 
 # Spawn Initial HIT
-call (["python", "mturk-create.py", SEED, str(seedID), "0", "NULL"])
+call (["python", "mturk-create.py", SEED, str(seedID), "0", "NULL", str(NUM_BRANCHES)])
 
 db.execute("select Job_ID from jobs")
 jobIDs = db.fetchall()

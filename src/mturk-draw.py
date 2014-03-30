@@ -60,12 +60,12 @@ db.execute("select * from hits where Job_ID = ?", [JOB_ID])
 hits_response = db.fetchall()
 # get max iter
 max_iter = -1;
-for rows in hits_response:
-    if (int(rows[3]) > max_iter):
-        max_iter = int(rows[3])
+for row in hits_response:
+    if (int(row[3]) > max_iter):
+        max_iter = int(row[3])
 hits_set = {}
-for rows in hits_response:
-    hits_set[str(rows[1])] = (rows[5], rows[3])
+for row in hits_response:
+    hits_set[str(row[1])] = (row[5], row[3])
 
 iter_sorted_list = []
 for i in range(0,max_iter+1):
@@ -80,7 +80,19 @@ for i in range(1,max_iter+1):
     for node in iter_sorted_list[i]:
         parent_id = node[2]
         G.add_edge(str(hits_set[str(parent_id)][0]), str(hits_set[str(node[1])][0]))
+        
+# We aren't done yet, need to add outer most layer to graph
+outer_hit_ids = []
+for row in hits_response:
+    if (int(row[3]) == max_iter):
+        outer_hit_ids.append(str(row[1]))
 
+# get results of those hit ids and add them to the graph
+for hit_id in outer_hit_ids:
+    db.execute("select Response from results where Hit_ID = ?", [hit_id])
+    responses = db.fetchall()
+    for phrase in responses:
+        G.add_edge(str(hits_set[hit_id][0]), str(phrase[0]))
 '''
 for i in range(0,max_iter+1):
     for row in hits_response:

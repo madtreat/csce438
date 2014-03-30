@@ -23,8 +23,9 @@ def print_usage():
    print("   Job_ID     = the Seed Phrase ID")
    print("   iter    = the iteration/level for this particular HIT")
    print("   parent_HIT_ID    = the parent HIT of the new HIT to be created")
+   print("   num_branches    = Number of branches for each node")
 
-if len(sys.argv) != 5:
+if len(sys.argv) != 6:
    print_usage()
    exit()
 
@@ -34,6 +35,7 @@ PHRASE   = sys.argv[1]
 Job_ID      = sys.argv[2]
 ITERATION= sys.argv[3]
 PARENT_HIT_ID = sys.argv[4]
+BRANCHES = sys.argv[5]
 
 
 # Connect to the HIT database
@@ -59,7 +61,7 @@ KEYWORDS = 'opinions, relations, idea, brainstorm, crowdstorm'
 QUAL     = Qualifications()
 QUAL     = QUAL.add(PercentAssignmentsApprovedRequirement('GreaterThanOrEqualTo', 75))
 REWARD   = 0.05
-MAX_ASSN = 3#20
+MAX_ASSN = BRANCHES
 
 
 # HIT Overview
@@ -115,12 +117,13 @@ print(status)
 
 # Insert this HIT's info into the database
 uniqueTable = "SELECT (Job_ID, Phrase) FROM unique_phrases WHERE Job_ID = ? AND Phrase = ?"
-unique = db.execute(uniqueTable, (Job_ID, PHRASE))
+unique = db.execute(uniqueTable, (Job_ID, PHRASE)
 print (unique)
 '''
 if unique not empty:
 	do next 2 lines
 '''
+
 hitsTable = "INSERT INTO hits VALUES (?, ?, ?, ?, 0, ?, 0)"
 db.execute(hitsTable, (Job_ID, hit_id, PARENT_HIT_ID, ITERATION, PHRASE))
 

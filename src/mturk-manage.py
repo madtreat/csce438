@@ -38,6 +38,12 @@ call (["python", "mturk-retrieve.py", JOB_ID])
 database = sqlite3.connect('crowdstorming.db')
 db       = database.cursor()
 
+# Get max iterations and branches from job table
+db.execute("select * from jobs where Job_ID = ?", [JOB_ID])
+jobInfo = db.fetchall()
+BRANCHES = jobInfo[0][2]
+MAX_ITER = jobInfo[0][3]
+
 # Get all hits with given job id
 db.execute("select * from hits where Job_ID = ?", [JOB_ID])
 allHits = db.fetchall()
@@ -49,18 +55,16 @@ for hit in allHits:
     currIter = hit[3]
     numCompleted = hit[4]
     hasChildren = hit[6]
-    print hitID + " " + str(currIter) + " " + str(numCompleted) + " " + str(hasChildren)
-    if (currIter < 4 and numCompleted == 3 and hasChildren == 0):
+    if (currIter < MAX_ITER and numCompleted == BRANCHES and hasChildren == 0):
         newlyCompletedHits.append((hitID, currIter))
 
 # Get Results from newly completed HIT and create new HITs from them
-print newlyCompletedHits
 for hitID, currIter in newlyCompletedHits:
     db.execute("select Response from results where Hit_ID = ?", [hitID])
     newPhrases = db.fetchall()
-    newIter = currIter+1
+    nextIter = currIter+1
     for phrase in newPhrases:
-        call (["python", "mturk-create.py", str(phrase[0]), str(JOB_ID), str(newIter), str(hitID)])
+        call (["python", "mturk-create.py", str(phrase[0]), str(JOB_ID), str(nextIter), str(hitID), str(BRANCHES)])
     
     # update Has_Children field
     #db.execute('BEGIN DEFERRED TRANSACTION')

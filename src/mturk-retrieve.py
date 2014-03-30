@@ -74,6 +74,7 @@ for hit in hit_ids:
             print ("      Phrase    = " + response)
             # Add the results into the database
             resultsTable = "INSERT OR REPLACE INTO results VALUES (?, ?, ?, ?)"
+
             #print (db_entry)
             db.execute(resultsTable, (JOB_ID, hit_id, task_id, str(response).lower()))
 
