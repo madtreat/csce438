@@ -73,7 +73,7 @@ db.execute(seedResults)
 
 
 # Create table of unique phrases per job
-unique = "CREATE TABLE unique_phrases ("\
+unique = "CREATE TABLE IF NOT EXISTS unique_phrases ("\
    "Job_ID  INTEGER NOT NULL,"\
    "Phrase  TEXT NOT NULL"\
    ")"
