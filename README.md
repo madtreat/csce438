@@ -7,6 +7,7 @@ Homework 3 (and 4) of CSCE 438 at Texas A&amp;M University
 DETAILED DESCRIPTION:
 =====================
 Use only the following two scripts to start a job and manage it.
+
 Note: your AMT credentials should be entered into a BOTO configuration file
 
    UNIX: ~/.boto
