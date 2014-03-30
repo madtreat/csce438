@@ -16,13 +16,13 @@ Note: your AMT credentials should be entered into a BOTO configuration file
 
 To launch the initial AMT job, use the following script (Note: Python 3.3 is required)
 
-   $ python src/mturk-create-init-seed.py <num_iter> <num_branches> "<seed_phrase>"
+   $ python src/mturk-create-init-seed.py [num_iter] [num_branches] ["seed_phrase"]
 
 The number of iterations and branches provided will change the appearance of the results graph, and will affect the quality and "far-reaching" effect of the brainstorming task.  The "seed_phrase" is the phrase you would like to have crowd-stormed.
 
 Once the above script has been run to create the initial job, results can be checked using the mturk-manage.py script.
 
-   $ python mturk-manage.py <job_id>
+   $ python mturk-manage.py [job_id]
 
 The Job ID returned from the "create-init-seed.py" script should be used as an argument to the "manage" script.  
 
