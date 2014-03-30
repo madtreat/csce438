@@ -115,7 +115,7 @@ print(status)
 
 # Insert this HIT's info into the database
 uniqueTable = "SELECT (Job_ID, Phrase) FROM unique_phrases WHERE Job_ID = ? AND Phrase = ?"
-unique = db.execute(uniqueTabl, (Job_ID, PHRASE)
+unique = db.execute(uniqueTable, (Job_ID, PHRASE))
 print (unique)
 '''
 if unique not empty:
