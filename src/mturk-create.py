@@ -116,16 +116,15 @@ status = 'iteration {}: hit spawned with id = {}'.format(ITERATION, hit_id)
 print(status)
 
 # Insert this HIT's info into the database
-uniqueTable = "SELECT (Job_ID, Phrase) FROM unique_phrases WHERE Job_ID = ? AND Phrase = ?"
-unique = db.execute(uniqueTable, (Job_ID, PHRASE)
-print (unique)
-'''
-if unique not empty:
-	do next 2 lines
-'''
 
-hitsTable = "INSERT INTO hits VALUES (?, ?, ?, ?, 0, ?, 0)"
-db.execute(hitsTable, (Job_ID, hit_id, PARENT_HIT_ID, ITERATION, PHRASE))
+uniqueTable = "SELECT * FROM unique_phrases WHERE (Job_ID = ? AND  Phrase = ?)"
+db.execute(uniqueTable, [Job_ID, PHRASE])
+unique = db.fetchall()
+print (unique)
+if (len(unique)) == 0:	
+	hitsTable = "INSERT INTO hits VALUES (?, ?, ?, ?, 0, ?, 0)"
+	db.execute(hitsTable, (Job_ID, hit_id, PARENT_HIT_ID, ITERATION, PHRASE))
+
 
 # Save changes
 database.commit()
