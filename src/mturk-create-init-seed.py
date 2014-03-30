@@ -12,7 +12,7 @@
 #     Tables   |  Columns
 #    ----------+--------------------------------------------------------------------
 #     jobs     |  Job_ID, Seed_Phrase, Created (Date)
-#     hits     |  Job_ID, Hit_ID,      Parent_Hit_ID, Iter,    Num_Complete, Phrase, Has_Childern
+#     hits     |  Job_ID, Hit_ID,      Parent_Hit_ID, Iter,    Num_Complete, Phrase, Has_Children
 #     results  |  Job_ID, Hit_ID,      Task_ID,       Response
 #
 
@@ -54,7 +54,7 @@ hitsTable = "CREATE TABLE IF NOT EXISTS hits ("\
    "Iter INTEGER NOT NULL, "\
    "Num_Complete INTEGER DEFAULT 0, "\
    "Phrase TEXT NOT NULL, "\
-   "Has_Childern INTEGER NOT NULL, "\
+   "Has_Children INTEGER NOT NULL, "\
    "PRIMARY KEY(Job_ID, Hit_ID)"\
    ")"
 db.execute(hitsTable)

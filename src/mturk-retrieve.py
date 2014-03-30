@@ -26,7 +26,7 @@ JOB_ID   = sys.argv[1]
 
 
 # Connect to the sqlite results database
-database = sqlite3.connect('crowdstorming.db')
+database = sqlite3.connect('crowdstorming.db', isolation_level='DEFERRED')
 db       = database.cursor()
 
 # BOTO Configuration

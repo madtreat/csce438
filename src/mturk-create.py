@@ -37,7 +37,7 @@ PARENT_HIT_ID = sys.argv[4]
 
 
 # Connect to the HIT database
-database = sqlite3.connect('crowdstorming.db')
+database = sqlite3.connect('crowdstorming.db', isolation_level='DEFERRED')
 db       = database.cursor()
 
 # BOTO Configuration

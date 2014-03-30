@@ -17,7 +17,7 @@
 #     Tables   |  Columns
 #    ----------+--------------------------------------------------------------------
 #     jobs     |  Job_ID, Seed_Phrase, Created (Date)
-#     hits     |  Job_ID, Hit_ID,      Parent_Hit_ID, Iter,    Num_Complete, Phrase, Has_Childern
+#     hits     |  Job_ID, Hit_ID,      Parent_Hit_ID, Iter,    Num_Complete, Phrase, Has_Children
 #     results  |  Job_ID, Hit_ID,      Task_ID,       Response
 #
 
@@ -55,9 +55,9 @@ for hit in allHits:
     hitID = str(hit[1]);
     currIter = hit[3]
     numCompleted = hit[4]
-    hasChildern = hit[6]
-    print hitID + " " + str(currIter) + " " + str(numCompleted) + " " + str(hasChildern)
-    if (currIter < 4 and numCompleted == 3 and hasChildern == 0):
+    hasChildren = hit[6]
+    print hitID + " " + str(currIter) + " " + str(numCompleted) + " " + str(hasChildren)
+    if (currIter < 4 and numCompleted == 3 and hasChildren == 0):
         newlyCompletedHits.append((hitID, currIter))
 
 # Get Results from newly completed HIT and create new HITs from them
@@ -69,12 +69,15 @@ for hitID, currIter in newlyCompletedHits:
     for phrase in newPhrases:
         call (["python", "mturk-create.py", str(phrase[0]), str(JOB_ID), str(newIter), str(hitID)])
     
-    # update Has_Childern field
-    hitsUpdate =   "UPDATE hits SET Has_Childern=1 WHERE Hit_ID=?"
+    # update Has_Children field
+    #db.execute('BEGIN DEFERRED TRANSACTION')
+    hitsUpdate =   "UPDATE hits SET Has_Children=1 WHERE Hit_ID=?"
     db.execute(hitsUpdate, [hitID])
+    #db.execute('COMMIT TRANSACTION')
+    #db.execute('END TRANSACTION')
 
-# Save changes
-database.commit()
+    # Save changes
+    database.commit()
 
 # draw graph
 call (["python", "mturk-draw.py", JOB_ID])
