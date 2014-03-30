@@ -78,9 +78,6 @@ for hit in hit_ids:
             #print (db_entry)
             db.execute(resultsTable, (JOB_ID, hit_id, task_id, str(response).lower()))
 
-            uniqueTable = "INSERT OR REPLACE INTO unique_phrases VALUES(?, ?)"
-            db.execute(uniqueTable, (JOB_ID, str(response).lower()))
-
    database.commit()
 
 # Save changes

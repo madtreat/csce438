@@ -41,8 +41,8 @@ db       = database.cursor()
 # Get max iterations and branches from job table
 db.execute("select * from jobs where Job_ID = ?", [JOB_ID])
 jobInfo = db.fetchall()
-BRANCHES = jobInfo[0][2]
-MAX_ITER = jobInfo[0][3]
+MAX_ITER = jobInfo[0][2]
+BRANCHES = jobInfo[0][3]
 
 # Get all hits with given job id
 db.execute("select * from hits where Job_ID = ?", [JOB_ID])
@@ -55,7 +55,7 @@ for hit in allHits:
     currIter = hit[3]
     numCompleted = hit[4]
     hasChildren = hit[6]
-    if (currIter < MAX_ITER and numCompleted == BRANCHES and hasChildren == 0):
+    if (currIter < (MAX_ITER-1) and numCompleted == BRANCHES and hasChildren == 0):
         newlyCompletedHits.append((hitID, currIter))
 
 # Get Results from newly completed HIT and create new HITs from them

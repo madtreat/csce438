@@ -91,40 +91,41 @@ qform.append(question)
 
 
 # Create the HIT
-res = mt.create_hit(
-   questions      = [question],#, question2],
-   qualifications = QUAL,
-            
-   title          = TITLE,
-   description    = DESC,
-   keywords       = KEYWORDS,
-                     
-   # These things affect the total cost:
-   reward         = mt.get_price_as_price(REWARD),
-   max_assignments= MAX_ASSN,
-                                 
-   # These are for scheduling and timing out.
-   # auto-approve timeout
-   approval_delay = datetime.timedelta(seconds=60),#4*60*60),
-   # how fast the task is abandoned if not finished
-   duration       = datetime.timedelta(seconds=15*60),
-   )
-      
-hit = res[0]
-hit_id = hit.HITId
-status = 'iteration {}: hit spawned with id = {}'.format(ITERATION, hit_id)
-print(status)
-
 # Insert this HIT's info into the database
-
 uniqueTable = "SELECT * FROM unique_phrases WHERE (Job_ID = ? AND  Phrase = ?)"
 db.execute(uniqueTable, [Job_ID, PHRASE])
 unique = db.fetchall()
 print (unique)
-if (len(unique)) == 0:	
-	hitsTable = "INSERT INTO hits VALUES (?, ?, ?, ?, 0, ?, 0)"
-	db.execute(hitsTable, (Job_ID, hit_id, PARENT_HIT_ID, ITERATION, PHRASE))
 
+if (len(unique)) == 0:
+    res = mt.create_hit(
+       questions      = [question],#, question2],
+       qualifications = QUAL,
+                
+       title          = TITLE,
+       description    = DESC,
+       keywords       = KEYWORDS,
+                         
+       # These things affect the total cost:
+       reward         = mt.get_price_as_price(REWARD),
+       max_assignments= MAX_ASSN,
+                                     
+       # These are for scheduling and timing out.
+       # auto-approve timeout
+       approval_delay = datetime.timedelta(seconds=60),#4*60*60),
+       # how fast the task is abandoned if not finished
+       duration       = datetime.timedelta(seconds=15*60),
+       )
+          
+    hit = res[0]
+    hit_id = hit.HITId
+    status = 'iteration {}: hit spawned with id = {}'.format(ITERATION, hit_id)
+    print(status)
+
+    hitsTable = "INSERT INTO hits VALUES (?, ?, ?, ?, 0, ?, 0)"
+    db.execute(hitsTable, (Job_ID, hit_id, PARENT_HIT_ID, ITERATION, PHRASE))
+    uniqueTable = "INSERT OR REPLACE INTO unique_phrases VALUES(?, ?)"
+    db.execute(uniqueTable, (Job_ID, str(PHRASE).lower()))
 
 # Save changes
 database.commit()
