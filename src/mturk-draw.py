@@ -72,8 +72,8 @@ for hit_id in outer_hit_ids:
     for phrase in responses:
         G.add_edge(str(hits_set[hit_id][0]), str(phrase[0]))
 
-for g in G:
-	print g
+#for g in G:
+#	print g
 graph_pos = nx.pydot_layout(G)
 
 graph_layout='shell'
