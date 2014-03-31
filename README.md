@@ -14,6 +14,8 @@ Note: your AMT credentials should be entered into a BOTO configuration file
 
    see https://code.google.com/p/boto/wiki/BotoConfig
 
+   WINDOWS: create a new BOTO_CONFIG system variable pointing to your .boto file
+   
 To launch the initial AMT job, use the following script (Note: Python 3.3 is required)
 
    $ python src/mturk-create-init-seed.py [num_iter] [num_branches] ["seed_phrase"]
