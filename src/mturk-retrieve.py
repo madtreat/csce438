@@ -5,7 +5,7 @@
 #
 #
 # DO NOT call this script except for developmental purposes.
-# It should ONLY be called from mturk-manage.py
+# It should ONLY be called from mturk-manage.py and mturk-create-init-seed.py
 #
 
 import datetime, sys, sqlite3
@@ -20,10 +20,8 @@ if len(sys.argv) != 2:
    print_usage()
    exit()
 
-
 # Process command line args
-JOB_ID   = sys.argv[1]
-
+JOB_ID = sys.argv[1]
 
 # Connect to the sqlite results database
 database = sqlite3.connect('crowdstorming.db', isolation_level='DEFERRED')
@@ -48,9 +46,6 @@ db.execute(jobHits, [JOB_ID])
 
 hit_ids = db.fetchall()
 print("Fetching results for Job ID " + JOB_ID)
-#print("HIT IDs:")
-#print(hit_ids)
-print("")
 
 for hit in hit_ids:
    hit_id = hit[0]
@@ -63,7 +58,6 @@ for hit in hit_ids:
    # Update the "hits" table with the number of completed tasks for this HIT
    hitsUpdate =   "UPDATE hits SET Num_Complete=? WHERE Hit_ID=?"
    db.execute(hitsUpdate, [len(tasks), hit_id])
-   #print("   Total number of rows changed: " + str(database.total_changes))
 
    for task in tasks:
       task_id = task.AssignmentId

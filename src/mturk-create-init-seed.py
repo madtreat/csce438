@@ -56,9 +56,8 @@ hitsTable = "CREATE TABLE IF NOT EXISTS hits ("\
 db.execute(hitsTable)
 
 
-# Add this phrase into the "jobs" table in the database
+# Add this phrase and restrictions into the "jobs" table in the database
 seedRow = 'INSERT INTO jobs(Seed_Phrase, Num_Iter, Num_Branches) VALUES (?, ?, ?)'
-#seedArg = ','.join('?')
 db.execute(seedRow, [SEED, NUM_ITER, NUM_BRANCHES])
 
 # Get the next (unique) Phrase ID
@@ -86,27 +85,15 @@ db.execute(unique)
 # Save changes
 database.commit()
 
-
 # Spawn Initial HIT
 call (["python", "mturk-create.py", SEED, str(seedID), "0", "NULL", str(NUM_BRANCHES)])
 
+# Get user's Job ID and display it to them
 db.execute("select Job_ID from jobs")
 jobIDs = db.fetchall()
 thisJobID = jobIDs[len(jobIDs)-1][0]
-
-print "Your Job ID is " + str(thisJobID)
-
-# Retrieve Results
-#cmd = "SELECT * FROM hits;"
-#hit_id = db.execute(cmd)
-#for hit_id, phrase, num_complete in db.execute(cmd):
-#   print ("manager hit: ")
-#   print (str(hit_id))
-#   time.sleep(1*30)
-
-   # Retrieve initial HIT results
-# TODO: change hit_id to job_id
-#   call (["python", "mturk-retrieve.py", hit_id])
+print 'Your Job ID is {}'.format(thisJobID)
+print 'You can now call mturk-manage.py {} to get completed HITs and updated Graph'.format(thisJobID)
 
 # Clean up and close the database
 database.close()

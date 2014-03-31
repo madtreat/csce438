@@ -5,7 +5,7 @@
 #
 #
 # DO NOT call this script except for developmental purposes.
-# It should ONLY be called from mturk-manage.py
+# It should ONLY be called from mturk-manage.py and mturk-create-init-seed.py
 #
 
 import datetime, sys, sqlite3
@@ -13,7 +13,6 @@ from boto.pyami.config import Config, BotoConfigLocations
 from boto.mturk.connection import MTurkConnection
 from boto.mturk.question import QuestionContent,Question,QuestionForm,Overview,AnswerSpecification,SelectionAnswer,FormattedContent,FreeTextAnswer
 from boto.mturk.qualification import Qualifications,PercentAssignmentsApprovedRequirement
-
 
 # Ensure this script was correctly called
 def print_usage():
@@ -29,13 +28,12 @@ if len(sys.argv) != 6:
    print_usage()
    exit()
 
-
-# The given phrase to be brainstormed - read from the first argument
-PHRASE   = sys.argv[1]
-Job_ID      = sys.argv[2]
-ITERATION= sys.argv[3]
+# Get Command Line Arguments
+PHRASE        = sys.argv[1]
+JOB_ID        = sys.argv[2]
+ITERATION     = sys.argv[3]
 PARENT_HIT_ID = sys.argv[4]
-BRANCHES = sys.argv[5]
+BRANCHES      = sys.argv[5]
 
 
 # Connect to the HIT database
@@ -60,14 +58,12 @@ DESC     = 'Given a word or phrase, provide another (different) word that relate
 KEYWORDS = 'opinions, relations, idea, brainstorm, crowdstorm'
 QUAL     = Qualifications()
 QUAL     = QUAL.add(PercentAssignmentsApprovedRequirement('GreaterThanOrEqualTo', 75))
-REWARD   = 0.05
+REWARD   = 0.01
 MAX_ASSN = BRANCHES
-
 
 # HIT Overview
 overview = Overview()
 overview.append_field('Title', 'Tell us things or phrases that relate to a given phrase or picture')
-
 
 # Build Question(s)
 qc = QuestionContent()
@@ -83,23 +79,20 @@ question = Question(
    is_required = True,
    )
 
-
 # Build Question Form
 qform = QuestionForm()
 qform.append(overview)
 qform.append(question)
 
-
 # Create the HIT
 # Insert this HIT's info into the database
 uniqueTable = "SELECT * FROM unique_phrases WHERE (Job_ID = ? AND  Phrase = ?)"
-db.execute(uniqueTable, [Job_ID, PHRASE])
+db.execute(uniqueTable, [JOB_ID, PHRASE])
 unique = db.fetchall()
-print (unique)
 
-if (len(unique)) == 0:
+if (len(unique) == 0):
     res = mt.create_hit(
-       questions      = [question],#, question2],
+       questions      = [question],
        qualifications = QUAL,
                 
        title          = TITLE,
@@ -118,14 +111,17 @@ if (len(unique)) == 0:
        )
           
     hit = res[0]
-    hit_id = hit.HITId
-    status = 'iteration {}: hit spawned with id = {}'.format(ITERATION, hit_id)
+    HIT_ID = hit.HITId
+    status = 'iteration {}: hit spawned with id = {} and phrase = {}'.format(ITERATION, HIT_ID, PHRASE)
     print(status)
 
+    # insert new HIT into the HIT table
     hitsTable = "INSERT INTO hits VALUES (?, ?, ?, ?, 0, ?, 0)"
-    db.execute(hitsTable, (Job_ID, hit_id, PARENT_HIT_ID, ITERATION, PHRASE))
+    db.execute(hitsTable, (JOB_ID, HIT_ID, PARENT_HIT_ID, ITERATION, PHRASE))
+    
+    #insert new phrase into the unique phrase table
     uniqueTable = "INSERT OR REPLACE INTO unique_phrases VALUES(?, ?)"
-    db.execute(uniqueTable, (Job_ID, str(PHRASE).lower()))
+    db.execute(uniqueTable, (JOB_ID, str(PHRASE).lower()))
 
 # Save changes
 database.commit()

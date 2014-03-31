@@ -7,7 +7,8 @@
 # of a job.  In particular, the different functions that will be 
 # performed by this script (using the other scripts) are:
 #  - retrieve and aggregate all results
-#  - display results if all HITs and MTurk Tasks are complete
+#  - create new HITs based on the results
+#  - Show current updated Graph
 #
 # The other scripts should not be called directly except for 
 # developmental purposes, as they are all managed by THIS script.
@@ -22,11 +23,12 @@ from boto.mturk.connection import MTurkConnection
 # Ensure this script was correctly called
 def print_usage():
    print("Usage: " + sys.argv[0] + " job_id")
+   print("\nWhere:")
+   print("   job_id  = Job ID given to you after calling mturk-create-init-seed.py")
 
 if len(sys.argv) != 2:
    print_usage()
    exit()
-
 
 # Process command line args
 JOB_ID = sys.argv[1]
@@ -55,41 +57,32 @@ for hit in allHits:
     currIter = hit[3]
     numCompleted = hit[4]
     hasChildren = hit[6]
+    # only create new HITs if:
+    #  - The current iteration is less than the max iteration specified
+    #  - The number of completed assignments is equal to the number of branches we want
+    #  - The HIT hasn't already create new HITs based on its results
     if (currIter < (MAX_ITER-1) and numCompleted == BRANCHES and hasChildren == 0):
         newlyCompletedHits.append((hitID, currIter))
 
-# Get Results from newly completed HIT and create new HITs from them
+# Create new HITs from the newly completed HITs
 for hitID, currIter in newlyCompletedHits:
     db.execute("select Response from results where Hit_ID = ?", [hitID])
     newPhrases = db.fetchall()
     nextIter = currIter+1
+    
+    # for each response in the newly completed HIT create new HITs
     for phrase in newPhrases:
         call (["python", "mturk-create.py", str(phrase[0]), str(JOB_ID), str(nextIter), str(hitID), str(BRANCHES)])
     
     # update Has_Children field
-    #db.execute('BEGIN DEFERRED TRANSACTION')
     hitsUpdate =   "UPDATE hits SET Has_Children=1 WHERE Hit_ID=?"
     db.execute(hitsUpdate, [hitID])
-    #db.execute('COMMIT TRANSACTION')
-    #db.execute('END TRANSACTION')
 
     # Save changes
     database.commit()
 
 # draw graph
 call (["python", "mturk-draw.py", JOB_ID])
-
-# Retrieve Results
-#cmd = "SELECT * FROM hits;"
-#hit_id = db.execute(cmd)
-#for hit_id, phrase, num_complete in db.execute(cmd):
-#   print ("manager hit: ")
-#   print (str(hit_id))
-#   time.sleep(1*30)
-
-   # Retrieve initial HIT results
-# TODO: change hit_id to job_id
-#   call (["python", "mturk-retrieve.py", hit_id])
 
 # Clean up and close the database
 database.close()
