@@ -21,31 +21,9 @@
 
 import networkx as nx
 import matplotlib.pyplot as plt
+import matplotlib
 import sys, sqlite3
 
-
-'''
-query: FROM jobs SELECT Jobs_ID = JOB_ID (provided in command line)
-    gets intital seed phrase
-query: FROM hits SELECT Job_ID = JOB_ID
-    gets every non-leaf node thats going to be in the graph - non_leaf_nodes
-    
-get level 0 node from non_leaf_node
-make a hash table just for non-leaf-nodes
-hash on hit_id, entry will be a (phrase, parent_hit_id):
-for (int i=0; i<max_lvls; i++) {
-    get all nodes at lvl=i
-    foreach node at lvl = i
-        parent_id = non-leaf-nodes-hash-table[node_hit_id][1]
-        G.add_edge(non-leaf-nodes-hash-table[parent_id][0], non-leaf-nodes-hash-table[node_hit_id][0])
-}
-    
-query: FROM results SELECT Job_ID = JOB_ID
-    get every node thats going to be in the graph - all_nodes - stored in a list a tuples [(hit_id, task_id, response)]
-    
-    
-select * from jobs where Jobs_ID = JOB_ID
-'''
 
 JOB_ID = sys.argv[1]
 G = nx.Graph()
@@ -93,76 +71,35 @@ for hit_id in outer_hit_ids:
     responses = db.fetchall()
     for phrase in responses:
         G.add_edge(str(hits_set[hit_id][0]), str(phrase[0]))
-'''
-for i in range(0,max_iter+1):
-    for row in hits_response:
-        if (int(row[3]) == i):
-            parent_id = row[2]
-            G.add_edge(hits_set[str(parent_id)],hits_set[str(row[1])])
-    
-db.execute('select * from results where Job_ID = ?', [JOB_ID])
-results_response = db.fetchall()
-for row in results_response:
-    print row[3]
 
-for i in range(0, len(results_response)):
-    G.add_edge(hits_set[str(results_response[i][1])][0], str(results_response[i][3]))
-'''
-    
+for g in G:
+	print g
 graph_pos = nx.pydot_layout(G)
 
 graph_layout='shell'
-node_size=1600
+node_size=0
 node_color='blue'
 node_alpha=0.3
-node_text_size=12
-edge_color='blue'
-edge_alpha=0.3
-edge_tickness=1
+node_text_size=15
+node_text_color = 'black'
+node_text_weight = 'bold'
+edge_color='white'
+edge_alpha=0.5
+edge_tickness=2
 edge_text_pos=0.3
 text_font='sans-serif'
-    
+
 nx.draw_networkx_nodes(G,graph_pos,node_size=node_size, 
-                       alpha=node_alpha, node_color=node_color)
+                       alpha=node_alpha, node_color=node_color,
+					   ax=None)
 nx.draw_networkx_edges(G,graph_pos,width=edge_tickness,
-                       alpha=edge_alpha,edge_color=edge_color)
+                       alpha=edge_alpha,edge_color=edge_color,
+					   ax=None)
 nx.draw_networkx_labels(G, graph_pos,font_size=node_text_size,
-                        font_family=text_font)
+                        font_family=text_font, font_color=node_text_color,
+						font_weight=node_text_weight,
+					   ax=None)
 
-
+plt.axis('off')
+plt.title('Crowdstorm: {}'.format(initial_seed_phrase))
 plt.show()
-'''
-def draw_graph(graph, labels=None, graph_layout='shell',
-               node_size=1600, node_color='blue', node_alpha=0.3,
-               node_text_size=12,
-               edge_color='blue', edge_alpha=0.3, edge_tickness=1,
-               edge_text_pos=0.3,
-               text_font='sans-serif'):
-    G=nx.Graph()
-
-    for edge in graph:
-        G.add_edge(edge[0], edge[1])
-
-    graph_pos = nx.pydot_layout(G)
-    
-    nx.draw_networkx_nodes(G,graph_pos,node_size=node_size, 
-                           alpha=node_alpha, node_color=node_color)
-    nx.draw_networkx_edges(G,graph_pos,width=edge_tickness,
-                           alpha=edge_alpha,edge_color=edge_color)
-    nx.draw_networkx_labels(G, graph_pos,font_size=node_text_size,
-                            font_family=text_font)
-
-    if labels is None:
-        labels = range(len(graph))
-
-    edge_labels = dict(zip(graph, labels))
-    # nx.draw_networkx_edge_labels(G, graph_pos, edge_labels=edge_labels,label_pos=edge_text_pos)
-
-    plt.show()
-
-graph = [('Texas', 'cowboys'), ('Texas', 'boots'), ('Texas', 'lonestar'), ('Texas', 'big'), ('Texas', 'country')]
-
-
-
-#draw_graph(graph)
-'''
