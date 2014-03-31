@@ -31,7 +31,7 @@ db       = database.cursor()
 config = Config()
 AWS_ID = config.get('Credentials', 'aws_access_key_id', None)
 SECRET_ID = config.get('Credentials', 'aws_secret_access_key_id', None)
-HOST = 'mechanicalturk.sandbox.amazonaws.com'
+HOST = 'mechanicalturk.amazonaws.com'
 
 mt = MTurkConnection(
    aws_access_key_id=AWS_ID, 

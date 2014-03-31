@@ -44,7 +44,7 @@ db       = database.cursor()
 config = Config()
 AWS_ID = config.get('Credentials', 'aws_access_key_id', None)
 SECRET_ID = config.get('Credentials', 'aws_secret_access_key_id', None)
-HOST = 'mechanicalturk.sandbox.amazonaws.com'
+HOST = 'mechanicalturk.amazonaws.com'
 
 mt = MTurkConnection(
    aws_access_key_id=AWS_ID, 
@@ -105,9 +105,9 @@ if (len(unique) == 0):
                                      
        # These are for scheduling and timing out.
        # auto-approve timeout
-       approval_delay = datetime.timedelta(seconds=60),#4*60*60),
+       approval_delay = datetime.timedelta(seconds=5),
        # how fast the task is abandoned if not finished
-       duration       = datetime.timedelta(seconds=15*60),
+       duration       = datetime.timedelta(seconds=2*60),
        )
           
     hit = res[0]
